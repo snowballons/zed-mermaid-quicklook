@@ -383,13 +383,17 @@ fn remove_preview_dir(uri: &str) {
     }
 }
 
-/// Ask the running Zed instance to open the rendered image as a tab.
+/// Ask the running editor instance to open the rendered image as a tab.
 ///
 /// Zed does not implement the LSP `window/showDocument` request for regular language
 /// servers (only Copilot registers a handler, and it is a no-op stub), so we go through
-/// the `zed` CLI instead. Re-opening an already-open path just focuses that tab.
+/// the editor CLI instead (Wu is a Zed fork whose CLI is `wu`). Re-opening an
+/// already-open path just focuses that tab.
 fn open_in_editor(path: &Path) -> Result<()> {
-    for binary in ["zed", "zeditor", "xdg-open"] {
+    // `wu` first: on a Wu system `zed` is usually absent, and trying `wu` first avoids
+    // a pointless spawn failure. `xdg-open` stays last: it opens the system image
+    // viewer rather than an editor image tab, so it loses live re-render on save.
+    for binary in ["wu", "zed", "zeditor", "xdg-open"] {
         let spawned = Command::new(binary)
             .arg(path)
             .stdout(Stdio::null())
@@ -408,7 +412,7 @@ fn open_in_editor(path: &Path) -> Result<()> {
     }
 
     Err(anyhow!(
-        "could not open {}: no `zed` CLI on PATH",
+        "could not open {}: no `wu`/`zed` CLI on PATH",
         path.display()
     ))
 }

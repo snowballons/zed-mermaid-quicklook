@@ -1,6 +1,6 @@
 [package]
 name = "mermaid-quicklook-lsp"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
 description = "Language server that previews Mermaid diagrams as an image tab in Zed"

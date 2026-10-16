@@ -1,10 +1,10 @@
 id = "mermaid-quicklook"
 name = "Mermaid Quicklook"
-description = "Preview Mermaid diagrams (.mmd) as an image tab in Zed. Never modifies your files."
-version = "0.1.0"
+description = "Preview Mermaid diagrams (.mmd) as an image tab in Zed or its Wu fork. Never modifies your files."
+version = "0.2.0"
 schema_version = 1
-authors = ["Daniel Rudolph"]
-repository = "https://github.com/decrypted/zed-mermaid-quicklook"
+authors = ["Daniel Rudolph", "snowballons"]
+repository = "https://github.com/snowballons/zed-mermaid-quicklook"
 languages = ["languages/mermaid"]
 
 [lib]

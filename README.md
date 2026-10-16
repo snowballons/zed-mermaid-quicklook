@@ -10,7 +10,7 @@ as an image tab next to your source. Save the file and the preview updates in pl
 Zed extensions cannot draw their own UI — the extension API exposes language servers,
 grammars, and themes, but no panels or views. So instead of building a preview pane,
 this renders the diagram to a PNG in a temp directory and asks the running Zed instance
-to open it as an image tab (via the `zed` CLI). Zed watches that file, so re-rendering
+to open it as an image tab (via the `wu`/`zed` CLI). Zed watches that file, so re-rendering
 on save repaints the open tab: a live preview, using Zed's own image viewer, which
 already supports zoom.
 
@@ -18,7 +18,7 @@ Rendering is done by the Mermaid CLI (`mmdc`).
 
 ## Requirements
 
-- Zed
+- Zed (or its Wu fork — the `wu` CLI replaces `zed`)
 - Rust toolchain (to build)
 - `mmdc` — `npm install -g @mermaid-js/mermaid-cli`
 
@@ -28,9 +28,9 @@ Rendering is done by the Mermaid CLI (`mmdc`).
 ./scripts/install.sh
 ```
 
-Then load the extension in Zed:
+Then load the extension (in Wu the palette entry is `wu: install dev extension`):
 
-1. `Ctrl+Shift+P` → **`zed: install dev extension`**
+1. `Ctrl+Shift+P` → **`zed: install dev extension`** (or `wu: install dev extension`)
 2. Select this directory
 
 ## Usage

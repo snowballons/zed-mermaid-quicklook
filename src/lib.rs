@@ -16,8 +16,8 @@ impl zed::Extension for MermaidQuicklookExtension {
         worktree: &zed::Worktree,
     ) -> Result<zed::Command> {
         // The full shell environment carries secrets (AWS keys, tokens, ...) that the
-        // LSP would in turn hand to mmdc/Chromium and the `zed` CLI. Forward only the
-        // variables those subprocesses actually need.
+        // LSP would in turn hand to mmdc/Chromium and the `zed`/`wu` CLI. Forward only
+        // the variables those subprocesses actually need.
         let shell_env = worktree.shell_env();
 
         let command = shell_env
@@ -25,6 +25,11 @@ impl zed::Extension for MermaidQuicklookExtension {
             .find(|(key, _)| key == LSP_PATH_OVERRIDE)
             .map(|(_, value)| value.clone())
             .or_else(|| worktree.which(LSP_BINARY))
+            // GUI launches (Zed and the Wu fork alike) often have a minimal PATH that
+            // misses `~/.cargo/bin`, where `./scripts/install.sh` puts the server via
+            // `cargo install`. Fall back to the default cargo install location so the
+            // extension works without the user hand-editing PATH.
+            .or_else(|| default_cargo_lsp_path(&shell_env))
             .ok_or_else(|| {
                 format!(
                     "`{LSP_BINARY}` not found on PATH. Build and install it with ./scripts/install.sh, \
@@ -33,7 +38,7 @@ impl zed::Extension for MermaidQuicklookExtension {
             })?;
 
         // Allowlist: PATH/HOME to locate and run the tools, plus the display/session
-        // handles the `zed` GUI and Chromium need to reach the user's desktop.
+        // handles the Zed/Wu GUI and Chromium need to reach the user's desktop.
         const ALLOWED: &[&str] = &[
             "PATH",
             "HOME",
@@ -47,6 +52,12 @@ impl zed::Extension for MermaidQuicklookExtension {
             "LC_ALL",
             "TERM",
             "MMDC_PATH",
+            // mmdc runs via Puppeteer. Forward its browser resolution knobs so a
+            // system Chrome works without downloading chrome-headless-shell, e.g.
+            // `export PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable`.
+            "PUPPETEER_EXECUTABLE_PATH",
+            "PUPPETEER_CACHE_DIR",
+            "CHROME_PATH",
         ];
 
         let mut env: Vec<(String, String)> = shell_env
@@ -71,3 +82,18 @@ impl zed::Extension for MermaidQuicklookExtension {
 }
 
 zed::register_extension!(MermaidQuicklookExtension);
+
+/// Default `cargo install` location for the language server (`~/.cargo/bin/...`).
+/// Returned blindly (the WASM sandbox cannot stat the filesystem): the host's spawn
+/// reports a clear ENOENT if it is truly absent, and in the common GUI-launch case
+/// the file *is* there but PATH just doesn't include it.
+fn default_cargo_lsp_path(shell_env: &[(String, String)]) -> Option<String> {
+    let home = shell_env
+        .iter()
+        .find(|(key, _)| key == "HOME")
+        .map(|(_, value)| value)?;
+    if home.is_empty() {
+        return None;
+    }
+    Some(format!("{home}/.cargo/bin/{LSP_BINARY}"))
+}
