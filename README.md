@@ -21,6 +21,9 @@ Rendering is done by the Mermaid CLI (`mmdc`).
 - Zed (or its Wu fork — the `wu` CLI replaces `zed`)
 - Rust toolchain (to build)
 - `mmdc` — `npm install -g @mermaid-js/mermaid-cli`
+- A Chromium for `mmdc` (Puppeteer): either let it download `chrome-headless-shell`
+  or point it at system Chrome, e.g.
+  `export PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable`
 
 ## Install
 
